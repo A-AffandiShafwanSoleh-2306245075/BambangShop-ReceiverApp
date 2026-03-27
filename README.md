@@ -86,4 +86,55 @@ This is the place for you to write reflections:
 
 #### Reflection Subscriber-1
 
+## 1. Mengapa menggunakan RwLock dan bukan Mutex
+
+Pada tutorial ini, kita menggunakan `RwLock<Vec<Notification>>` untuk menyimpan data notifikasi yang diterima oleh receiver. Penggunaan `RwLock` diperlukan karena aplikasi dapat diakses secara bersamaan (concurrent), terutama ketika banyak notifikasi dikirim dari publisher dalam waktu yang hampir bersamaan.
+
+`RwLock` memungkinkan dua jenis akses:
+- Banyak thread dapat membaca data secara bersamaan (read lock)
+- Hanya satu thread yang dapat menulis data (write lock)
+
+Dalam implementasi yang saya lakukan:
+- Saat menambahkan notifikasi → menggunakan `write()`
+- Saat mengambil semua notifikasi → menggunakan `read()`
+
+Hal ini sangat cocok karena:
+- Operasi read (melihat daftar notifikasi) bisa terjadi lebih sering
+- Operasi write (menambahkan notifikasi) tetap aman dari race condition
+
+Jika menggunakan `Mutex`, maka:
+- Baik read maupun write akan saling mengunci
+- Hanya satu thread yang bisa mengakses data dalam satu waktu
+- Hal ini akan menurunkan performa karena read tidak bisa dilakukan secara paralel
+
+Oleh karena itu, `RwLock` lebih efisien dan sesuai untuk kasus ini dibandingkan `Mutex`.
+
+---
+
+## 2. Mengapa menggunakan lazy_static dan bukan static biasa seperti di Java
+
+Dalam tutorial ini, kita menggunakan `lazy_static` untuk membuat variabel global seperti `Vec` dan `DashMap`. Hal ini berbeda dengan Java yang memungkinkan perubahan isi variabel static secara langsung melalui static method.
+
+Rust tidak mengizinkan mutasi langsung pada variabel `static` karena alasan keamanan, khususnya untuk mencegah:
+- Data race
+- Undefined behavior dalam multi-threading
+
+Secara default:
+- Variabel `static` di Rust harus immutable
+- Jika ingin mutable, harus menggunakan mekanisme yang aman seperti `RwLock`, `Mutex`, atau struktur thread-safe lainnya
+
+`lazy_static` digunakan karena:
+- Mengizinkan inisialisasi variabel kompleks (seperti `Vec` atau `DashMap`) saat runtime
+- Tetap menjaga keamanan thread (thread-safe)
+- Memungkinkan kita memiliki global state yang bisa diubah, tetapi tetap terkontrol
+
+Dalam implementasi saya:
+- `NOTIFICATIONS` dibuat sebagai static menggunakan `lazy_static`
+- Dibungkus dengan `RwLock` untuk memastikan akses aman
+
+Jika kita menggunakan `static` biasa seperti di Java:
+- Rust tidak akan mengizinkan mutasi langsung
+- Akan berpotensi menyebabkan masalah concurrency
+
+Dengan demikian, penggunaan `lazy_static` di Rust adalah cara yang aman dan sesuai dengan prinsip ownership dan concurrency yang ketat di Rust.
 #### Reflection Subscriber-2
