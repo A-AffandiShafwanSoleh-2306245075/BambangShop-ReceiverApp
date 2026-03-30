@@ -59,25 +59,25 @@ You can install Postman via this website: https://www.postman.com/downloads/
     -   Open another new terminal, edit `ROCKET_PORT` in `.env` to `8003`, then execute `cargo run`.
 
 ## Mandatory Checklists (Subscriber)
--   [ ] Clone https://gitlab.com/ichlaffterlalu/bambangshop-receiver to a new repository.
+-   [x] Clone https://gitlab.com/ichlaffterlalu/bambanshop-receiver to a new repository.
 -   **STAGE 1: Implement models and repositories**
-    -   [ ] Commit: `Create Notification model struct.`
-    -   [ ] Commit: `Create SubscriberRequest model struct.`
-    -   [ ] Commit: `Create Notification database and Notification repository struct skeleton.`
-    -   [ ] Commit: `Implement add function in Notification repository.`
-    -   [ ] Commit: `Implement list_all_as_string function in Notification repository.`
-    -   [ ] Write answers of your learning module's "Reflection Subscriber-1" questions in this README.
+    -   [x] Commit: `Create Notification model struct.`
+    -   [x] Commit: `Create SubscriberRequest model struct.`
+    -   [x] Commit: `Create Notification database and Notification repository struct skeleton.`
+    -   [x] Commit: `Implement add function in Notification repository.`
+    -   [x] Commit: `Implement list_all_as_string function in Notification repository.`
+    -   [x] Write answers of your learning module's "Reflection Subscriber-1" questions in this README.
 -   **STAGE 3: Implement services and controllers**
-    -   [ ] Commit: `Create Notification service struct skeleton.`
-    -   [ ] Commit: `Implement subscribe function in Notification service.`
-    -   [ ] Commit: `Implement subscribe function in Notification controller.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification service.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification controller.`
-    -   [ ] Commit: `Implement receive_notification function in Notification service.`
-    -   [ ] Commit: `Implement receive function in Notification controller.`
-    -   [ ] Commit: `Implement list_messages function in Notification service.`
-    -   [ ] Commit: `Implement list function in Notification controller.`
-    -   [ ] Write answers of your learning module's "Reflection Subscriber-2" questions in this README.
+    -   [x] Commit: `Create Notification service struct skeleton.`
+    -   [x] Commit: `Implement subscribe function in Notification service.`
+    -   [x] Commit: `Implement subscribe function in Notification controller.`
+    -   [x] Commit: `Implement unsubscribe function in Notification service.`
+    -   [x] Commit: `Implement unsubscribe function in Notification controller.`
+    -   [x] Commit: `Implement receive_notification function in Notification service.`
+    -   [x] Commit: `Implement receive function in Notification controller.`
+    -   [x] Commit: `Implement list_messages function in Notification service.`
+    -   [x] Commit: `Implement list function in Notification controller.`
+    -   [x] Write answers of your learning module's "Reflection Subscriber-2" questions in this README.
 
 ## Your Reflections
 This is the place for you to write reflections:
@@ -86,4 +86,65 @@ This is the place for you to write reflections:
 
 #### Reflection Subscriber-1
 
+## 1. Mengapa menggunakan RwLock dan bukan Mutex
+
+Pada tutorial ini digunakan `RwLock<Vec<Notification>>` untuk menyimpan data notifikasi di receiver. Pemilihan ini berkaitan dengan kondisi aplikasi yang dapat diakses secara bersamaan oleh beberapa proses, terutama saat publisher mengirim notifikasi dalam waktu yang berdekatan.
+
+`RwLock` memberikan dua jenis akses, yaitu read dan write. Beberapa thread dapat melakukan read secara bersamaan, tetapi hanya satu thread yang dapat melakukan write dalam satu waktu. Dalam implementasi yang saya lakukan, method `write()` digunakan saat menambahkan notifikasi, sedangkan `read()` digunakan saat menampilkan daftar notifikasi.
+
+Jika dilihat dari kebutuhan sistem, operasi membaca data kemungkinan terjadi lebih sering dibandingkan penambahan data. Dengan menggunakan `RwLock`, proses membaca dapat berjalan secara paralel tanpa harus menunggu proses lain selesai, selama tidak ada proses write yang sedang berlangsung.
+
+Berbeda dengan `Mutex`, yang hanya mengizinkan satu thread mengakses data dalam satu waktu, baik untuk read maupun write. Hal ini dapat menyebabkan bottleneck ketika banyak request masuk, karena semua akses harus menunggu giliran.
+
+Berdasarkan hal tersebut, penggunaan `RwLock` dirasa lebih sesuai karena tetap menjaga keamanan data sekaligus memberikan performa yang lebih baik pada kondisi concurrent.
+
+---
+
+## 2. Mengapa menggunakan lazy_static dan bukan static biasa seperti di Java
+
+Dalam tutorial ini digunakan `lazy_static` untuk mendefinisikan variabel global seperti `Vec` dan `DashMap`. Hal ini berbeda dengan Java, di mana variabel static dapat diubah secara langsung melalui method static.
+
+Rust memiliki aturan yang lebih ketat terkait penggunaan variabel global. Secara default, variabel `static` bersifat immutable dan tidak dapat diubah secara langsung. Hal ini bertujuan untuk mencegah masalah seperti data race yang bisa terjadi dalam lingkungan multi-threading.
+
+Untuk mengatasi kebutuhan tersebut, digunakan `lazy_static` yang memungkinkan inisialisasi variabel global saat runtime. Selain itu, variabel tersebut tetap dapat diakses secara aman jika dibungkus dengan struktur seperti `RwLock` atau `Mutex`.
+
+Dalam implementasi yang saya lakukan, `NOTIFICATIONS` dibuat menggunakan `lazy_static` dan dibungkus dengan `RwLock`. Dengan cara ini, data dapat diakses dan dimodifikasi dengan aman oleh beberapa thread.
+
+Jika menggunakan `static` biasa, Rust tidak akan mengizinkan perubahan data secara langsung. Hal ini berbeda dengan Java, tetapi justru menjadi keunggulan Rust dalam menjaga keamanan program.
+
+Oleh karena itu, penggunaan `lazy_static` dalam kasus ini merupakan solusi yang tepat untuk mengelola data global secara aman dalam lingkungan concurrent.
 #### Reflection Subscriber-2
+
+## 1. Eksplorasi di luar tutorial (misalnya src/lib.rs)
+
+Selama mengerjakan tutorial ini, saya tidak hanya mengikuti langkah yang diberikan, tetapi juga sempat melihat beberapa file lain seperti `src/lib.rs`. Dari situ saya mulai paham bahwa file tersebut berfungsi sebagai pusat konfigurasi aplikasi.
+
+Di dalamnya terdapat beberapa hal penting seperti `APP_CONFIG`, `REQWEST_CLIENT`, serta tipe `Result` dan fungsi `compose_error_response`. Dengan melihat bagian ini, saya jadi lebih mengerti bagaimana aplikasi ini bekerja secara keseluruhan, tidak hanya di bagian controller atau service saja.
+
+Saya juga menyadari bahwa penggunaan HTTP client dibuat secara global agar bisa digunakan di banyak tempat, dan penanganan error dibuat seragam supaya lebih mudah dikelola. Dari sini, saya jadi punya gambaran yang lebih jelas tentang struktur project yang baik.
+
+---
+
+## 2. Kemudahan Observer Pattern dalam menambah subscriber
+
+Setelah mencoba menjalankan beberapa instance Receiver di port yang berbeda, saya merasa bahwa penggunaan Observer pattern sangat membantu dalam menambahkan subscriber baru.
+
+Setiap Receiver hanya perlu melakukan subscribe, tanpa perlu mengubah bagian lain dari sistem. Publisher juga tidak perlu tahu detail persis tiap subscriber, karena semuanya sudah dikelola oleh repository. Jadi ketika ada event seperti create atau delete product, semua subscriber akan otomatis menerima notifikasi.
+
+Namun, ketika saya membayangkan jika ada lebih dari satu Main App (Publisher), situasinya jadi lebih rumit. Karena masing-masing publisher punya data sendiri, subscriber harus subscribe ke masing-masing publisher secara terpisah. Tidak ada sinkronisasi otomatis antar publisher.
+
+Jadi menurut saya, Observer pattern ini sangat cocok untuk kasus banyak subscriber, tapi akan butuh penyesuaian tambahan kalau jumlah publisher juga bertambah.
+
+---
+
+## 3. Penggunaan Postman untuk testing dan dokumentasi
+
+Dalam tutorial ini, saya menggunakan Postman untuk mencoba semua endpoint yang sudah dibuat, seperti subscribe, unsubscribe, receive, dan melihat daftar notifikasi.
+
+Postman sangat membantu karena saya bisa langsung mengirim request dan melihat hasilnya tanpa perlu membuat frontend. Ini membuat proses testing jadi lebih cepat dan praktis.
+
+Selain itu, fitur collection juga memudahkan saya dalam mengelompokkan endpoint, jadi tidak perlu mengetik ulang setiap request. Saya juga jadi lebih mudah memahami alur komunikasi antara publisher dan receiver.
+
+Walaupun saya belum mencoba fitur testing otomatis di Postman, saya merasa fitur tersebut akan sangat berguna jika digunakan di project yang lebih besar, terutama untuk memastikan API tetap berjalan dengan baik setelah ada perubahan.
+
+Secara keseluruhan, penggunaan Postman cukup membantu saya dalam memahami dan menguji sistem yang saya buat di tutorial ini.
