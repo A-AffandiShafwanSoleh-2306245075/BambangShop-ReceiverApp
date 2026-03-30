@@ -59,25 +59,25 @@ You can install Postman via this website: https://www.postman.com/downloads/
     -   Open another new terminal, edit `ROCKET_PORT` in `.env` to `8003`, then execute `cargo run`.
 
 ## Mandatory Checklists (Subscriber)
--   [ ] Clone https://gitlab.com/ichlaffterlalu/bambangshop-receiver to a new repository.
+-   [x] Clone https://gitlab.com/ichlaffterlalu/bambanshop-receiver to a new repository.
 -   **STAGE 1: Implement models and repositories**
-    -   [ ] Commit: `Create Notification model struct.`
-    -   [ ] Commit: `Create SubscriberRequest model struct.`
-    -   [ ] Commit: `Create Notification database and Notification repository struct skeleton.`
-    -   [ ] Commit: `Implement add function in Notification repository.`
-    -   [ ] Commit: `Implement list_all_as_string function in Notification repository.`
-    -   [ ] Write answers of your learning module's "Reflection Subscriber-1" questions in this README.
+    -   [x] Commit: `Create Notification model struct.`
+    -   [x] Commit: `Create SubscriberRequest model struct.`
+    -   [x] Commit: `Create Notification database and Notification repository struct skeleton.`
+    -   [x] Commit: `Implement add function in Notification repository.`
+    -   [x] Commit: `Implement list_all_as_string function in Notification repository.`
+    -   [x] Write answers of your learning module's "Reflection Subscriber-1" questions in this README.
 -   **STAGE 3: Implement services and controllers**
-    -   [ ] Commit: `Create Notification service struct skeleton.`
-    -   [ ] Commit: `Implement subscribe function in Notification service.`
-    -   [ ] Commit: `Implement subscribe function in Notification controller.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification service.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification controller.`
-    -   [ ] Commit: `Implement receive_notification function in Notification service.`
-    -   [ ] Commit: `Implement receive function in Notification controller.`
-    -   [ ] Commit: `Implement list_messages function in Notification service.`
-    -   [ ] Commit: `Implement list function in Notification controller.`
-    -   [ ] Write answers of your learning module's "Reflection Subscriber-2" questions in this README.
+    -   [x] Commit: `Create Notification service struct skeleton.`
+    -   [x] Commit: `Implement subscribe function in Notification service.`
+    -   [x] Commit: `Implement subscribe function in Notification controller.`
+    -   [x] Commit: `Implement unsubscribe function in Notification service.`
+    -   [x] Commit: `Implement unsubscribe function in Notification controller.`
+    -   [x] Commit: `Implement receive_notification function in Notification service.`
+    -   [x] Commit: `Implement receive function in Notification controller.`
+    -   [x] Commit: `Implement list_messages function in Notification service.`
+    -   [x] Commit: `Implement list function in Notification controller.`
+    -   [x] Write answers of your learning module's "Reflection Subscriber-2" questions in this README.
 
 ## Your Reflections
 This is the place for you to write reflections:
@@ -129,7 +129,7 @@ Saya juga menyadari bahwa penggunaan HTTP client dibuat secara global agar bisa 
 
 Setelah mencoba menjalankan beberapa instance Receiver di port yang berbeda, saya merasa bahwa penggunaan Observer pattern sangat membantu dalam menambahkan subscriber baru.
 
-Setiap Receiver hanya perlu melakukan subscribe, tanpa perlu mengubah bagian lain dari sistem. Publisher juga tidak perlu tahu detail tiap subscriber, karena semuanya sudah dikelola oleh repository. Jadi ketika ada event seperti create atau delete product, semua subscriber akan otomatis menerima notifikasi.
+Setiap Receiver hanya perlu melakukan subscribe, tanpa perlu mengubah bagian lain dari sistem. Publisher juga tidak perlu tahu detail persis tiap subscriber, karena semuanya sudah dikelola oleh repository. Jadi ketika ada event seperti create atau delete product, semua subscriber akan otomatis menerima notifikasi.
 
 Namun, ketika saya membayangkan jika ada lebih dari satu Main App (Publisher), situasinya jadi lebih rumit. Karena masing-masing publisher punya data sendiri, subscriber harus subscribe ke masing-masing publisher secara terpisah. Tidak ada sinkronisasi otomatis antar publisher.
 
